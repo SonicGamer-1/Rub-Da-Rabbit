@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Rub da Rabbits",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/rubdarabbits",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build SDL",
+            "MIMode": "gdb"
+        }
+    ]
+}
