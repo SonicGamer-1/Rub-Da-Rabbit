@@ -17,6 +17,7 @@ void Player::update(bool left, bool right, bool up, bool down, bool jump, float 
         vz = SPEED * 2;
         az = -SPEED * 4; // makes time of flight 1 second
         onGround = false;
+        src.x = 0;
     }
     if (vz <= -SPEED * 2 && !onGround)
     {
@@ -51,17 +52,13 @@ void Player::update(bool left, bool right, bool up, bool down, bool jump, float 
     center->y = (int)(s / 2);
 
     animTime += dt;
-    if (animTime >= 0.25 && (vx != 0 || vy != 0) && onGround)
+    if (animTime >= 0.25 / 3 && (vx != 0 || vy != 0) && onGround)
     {
         animTime = 0;
-        if (src.x == 0)
-        {
-            src = frame2;
-        }
+        if (src.x == 32 * 5)
+            src.x = 0;
         else
-        {
-            src = frame1;
-        }
+            src.x += 32;
     }
 }
 

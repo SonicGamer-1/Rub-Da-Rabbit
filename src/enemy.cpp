@@ -25,17 +25,13 @@ void Enemy::update(float dt, Player *p, bool &running)
     center->y = (int)(PLAYER_SIZE / 2);
 
     animTime += dt;
-    if (animTime >= 0.25)
+    if (animTime >= 0.25 / 3)
     {
         animTime = 0;
-        if (src.x == 0)
-        {
-            src = frame2;
-        }
+        if (src.x == 32 * 5)
+            src.x = 0;
         else
-        {
-            src = frame1;
-        }
+            src.x += 32;
     }
 }
 
