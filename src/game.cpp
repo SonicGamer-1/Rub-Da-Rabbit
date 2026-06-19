@@ -2,6 +2,7 @@
 
 #include "consts.h"
 #include "game.h"
+#include <ctime>
 
 void Game::init()
 {
@@ -12,15 +13,16 @@ void Game::init()
 
     IMG_Init(IMG_INIT_PNG);
 
+    srand((unsigned int)time(nullptr));
+
     this->enemies = new std::vector<Enemy>;
     this->p = new Player{10.0f, 10.0f, PLAYER_SIZE};
+    carrot = new SDL_Rect{WIDTH - 30, HEIGHT - 50, 20, 40};
 
     p->texture = IMG_LoadTexture(renderer, "assets/player.png");
     carrotTexture = IMG_LoadTexture(renderer, "assets/carrot.png");
     enemyTexture = IMG_LoadTexture(renderer, "assets/enemy.png");
     tempE.texture = enemyTexture;
-
-    carrot = new SDL_Rect{WIDTH - 30, HEIGHT - 50, 20, 40};
 }
 
 void Game::enemyUpdate()
@@ -60,8 +62,8 @@ void Game::loop()
 {
     Uint64 lastTime = SDL_GetPerformanceCounter();
 
-    /*int frameCount = 0;
-    float timeAccumulator = 0.0f;*/
+    int frameCount = 0;
+    float timeAccumulator = 0.0f;
 
     while (running)
     {
@@ -69,14 +71,14 @@ void Game::loop()
         deltaTime = (currentTime - lastTime) / (float)SDL_GetPerformanceFrequency();
         lastTime = currentTime;
 
-        /*timeAccumulator += deltaTime;
+        timeAccumulator += deltaTime;
         frameCount++;
         if (timeAccumulator >= 1.0f)
         {
             printf("FPS: %d\n", frameCount);
             timeAccumulator = 0.0f;
             frameCount = 0;
-        }*/
+        }
 
         SDL_Event event;
 
@@ -100,6 +102,11 @@ void Game::loop()
 
             tempE.x = (float)(rand() % (WIDTH - PLAYER_SIZE));
             tempE.y = (float)(rand() % (HEIGHT - PLAYER_SIZE));
+            if (abs(tempE.x - p->x) < 4 * PLAYER_SIZE && abs(tempE.y - p->y) < 4 * PLAYER_SIZE)
+            {
+                tempE.x += ((tempE.x - p->x) > 0 ? +1 : -1) * PLAYER_SIZE * 3;
+                tempE.y += ((tempE.y - p->y) > 0 ? +1 : -1) * PLAYER_SIZE * 3;
+            }
             enemies->push_back(tempE);
         }
 
@@ -115,45 +122,14 @@ void Game::loop()
         SDL_RenderCopy(renderer, carrotTexture, nullptr, carrot);
 
         SDL_RenderPresent(renderer);
-
-        /*while (win && !running)
-        {
-            while (SDL_PollEvent(&event))
-            {
-                if (event.type == SDL_QUIT)
-                {
-                    win = false;
-                }
-                if (event.type == SDL_KEYDOWN)
-                {
-                    win = false;
-                    running = true;
-                }
-            }
-
-            // win ui
-        }
-        while (!win && !running)
-        {
-            while (SDL_PollEvent(&event))
-            {
-                if (event.type == SDL_QUIT)
-                {
-                    win = true;
-                }
-                if (event.type == SDL_KEYDOWN)
-                {
-                    running = true;
-                }
-            }
-
-            // lose ui
-        }*/
     };
 }
 
 void Game::quit()
 {
+    SDL_DestroyTexture(carrotTexture);
+    SDL_DestroyTexture(enemyTexture);
+    SDL_DestroyTexture(p->texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
