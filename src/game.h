@@ -16,6 +16,8 @@ class Game
     bool win = false;
     float deltaTime = 0.0f;
 
+    SDL_Texture *carrotTexture = nullptr;
+
 public:
     void init(Player *p, std::vector<Enemy> *enemies);
     void loop();

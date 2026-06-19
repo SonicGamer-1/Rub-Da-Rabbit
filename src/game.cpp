@@ -27,6 +27,8 @@ void Game::init(Player *p, std::vector<Enemy> *enemies)
         enemies->push_back(e);
     }
 
+    carrotTexture = IMG_LoadTexture(renderer, "assets/carrot.png");
+
     winPoint = new SDL_Rect{WIDTH - 50, HEIGHT - 50, 40, 40};
 }
 
@@ -114,8 +116,7 @@ void Game::loop()
         }
         p->render(renderer);
 
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-        SDL_RenderFillRect(renderer, winPoint);
+        SDL_RenderCopy(renderer, carrotTexture, nullptr, winPoint);
 
         SDL_RenderPresent(renderer);
 
