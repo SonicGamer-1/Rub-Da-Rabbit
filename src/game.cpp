@@ -2,9 +2,8 @@
 
 #include "consts.h"
 #include "game.h"
-#include "enemy.h"
 
-void Game::init(Player *p, std::vector<Enemy> *enemies)
+void Game::init()
 {
     SDL_Init(SDL_INIT_EVERYTHING);
     window = SDL_CreateWindow("Rub da Rabbits", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_RESIZABLE);
@@ -13,23 +12,15 @@ void Game::init(Player *p, std::vector<Enemy> *enemies)
 
     IMG_Init(IMG_INIT_PNG);
 
+    this->enemies = new std::vector<Enemy>;
+    this->p = new Player{10.0f, 10.0f, PLAYER_SIZE};
+
     p->texture = IMG_LoadTexture(renderer, "assets/player.png");
-
-    this->p = p;
-    this->enemies = enemies;
-
-    for (int i = 0; i < 5; i++)
-    {
-        Enemy e;
-        e.x = (i + 1) * 300.0f;
-        e.y = HEIGHT / 2.0f;
-        e.texture = IMG_LoadTexture(renderer, "assets/enemy.png");
-        enemies->push_back(e);
-    }
-
     carrotTexture = IMG_LoadTexture(renderer, "assets/carrot.png");
+    enemyTexture = IMG_LoadTexture(renderer, "assets/enemy.png");
+    tempE.texture = enemyTexture;
 
-    winPoint = new SDL_Rect{WIDTH - 50, HEIGHT - 50, 40, 40};
+    carrot = new SDL_Rect{WIDTH - 30, HEIGHT - 50, 20, 40};
 }
 
 void Game::enemyUpdate()
@@ -101,10 +92,15 @@ void Game::loop()
         p->update(keys[SDL_SCANCODE_A], keys[SDL_SCANCODE_D], keys[SDL_SCANCODE_W], keys[SDL_SCANCODE_S], keys[SDL_SCANCODE_SPACE], deltaTime);
         enemyUpdate();
 
-        if (SDL_HasIntersection(&p->rect, winPoint))
+        if (SDL_HasIntersection(&p->rect, carrot))
         {
-            running = false;
-            win = true;
+            score++;
+            carrot->x = rand() % (WIDTH - 20);
+            carrot->y = rand() % (HEIGHT - 40);
+
+            tempE.x = (float)(rand() % (WIDTH - PLAYER_SIZE));
+            tempE.y = (float)(rand() % (HEIGHT - PLAYER_SIZE));
+            enemies->push_back(tempE);
         }
 
         SDL_SetRenderDrawColor(renderer, 250, 250, 250, 255);
@@ -116,7 +112,7 @@ void Game::loop()
         }
         p->render(renderer);
 
-        SDL_RenderCopy(renderer, carrotTexture, nullptr, winPoint);
+        SDL_RenderCopy(renderer, carrotTexture, nullptr, carrot);
 
         SDL_RenderPresent(renderer);
 

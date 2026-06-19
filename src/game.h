@@ -4,22 +4,25 @@
 #include <SDL2/SDL.h>
 
 #include "player.h"
-
-class Enemy;
+#include "enemy.h"
 
 class Game
 {
     void enemyUpdate();
-    SDL_Rect *winPoint;
+    SDL_Rect *carrot;
 
     bool running = true;
     bool win = false;
     float deltaTime = 0.0f;
 
     SDL_Texture *carrotTexture = nullptr;
+    SDL_Texture *enemyTexture = nullptr;
+
+    int score = 0;
+    Enemy tempE;
 
 public:
-    void init(Player *p, std::vector<Enemy> *enemies);
+    void init();
     void loop();
     void quit();
 
