@@ -3,6 +3,30 @@
 #include "consts.h"
 #include "game.h"
 #include <ctime>
+#include <fstream>
+
+void Game::saveHighScore()
+{
+    std::ofstream file("save.dat", std::ios::binary);
+
+    if (file)
+    {
+        file.write(reinterpret_cast<char *>(&highScore), sizeof(highScore));
+    }
+}
+void Game::loadHighScore()
+{
+    std::ifstream file("save.dat", std::ios::binary);
+
+    if (file)
+    {
+        file.read(reinterpret_cast<char *>(&highScore), sizeof(highScore));
+    }
+    else
+    {
+        highScore = 0;
+    }
+}
 
 void Game::init()
 {
@@ -18,6 +42,7 @@ void Game::init()
     uiFont = TTF_OpenFont("assets/font.ttf", 36);
 
     srand((unsigned int)time(nullptr));
+    loadHighScore();
 
     this->enemies = new std::vector<Enemy>;
     this->p = new Player{10.0f, 10.0f, PLAYER_SIZE};
@@ -125,6 +150,12 @@ void Game::loop()
         ui.staminaCounter(p->stamina, carrotTexture);
 
         SDL_RenderPresent(renderer);
+
+        if (score > highScore)
+        {
+            saveHighScore();
+            highScore = score;
+        }
 
         while (!running)
         {

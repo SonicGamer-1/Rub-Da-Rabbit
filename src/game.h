@@ -12,6 +12,8 @@
 class Game
 {
     void enemyUpdate();
+    void saveHighScore();
+    void loadHighScore();
 
     SDL_Rect *carrot;
 
@@ -23,6 +25,8 @@ class Game
     SDL_Texture *enemyTexture = nullptr;
 
     int score = 0;
+    int highScore;
+
     Enemy tempE;
 
     TTF_Font *uiFont = nullptr;
