@@ -70,11 +70,13 @@ void Game::loop()
     float timeAccumulator = 0.0f;
 
     ui.update("Score: " + std::to_string(score), {0, 0, 0, 255}, uiFont, scoreTexture);
+    ui.update("Game Over! Press Enter to Restart", {0, 0, 0, 255}, uiFont, gameOverTexture);
 
     while (running)
     {
-        deltaTime = (float)(SDL_GetPerformanceCounter() - lastTime) / SDL_GetPerformanceFrequency();
-        lastTime = SDL_GetPerformanceCounter();
+        Uint64 currentTime = SDL_GetPerformanceCounter();
+        deltaTime = (float)(currentTime - lastTime) / SDL_GetPerformanceFrequency();
+        lastTime = currentTime;
 
         ui.fpsCounter(frameCount, timeAccumulator, deltaTime, uiFont, fpsTexture);
 
@@ -83,9 +85,7 @@ void Game::loop()
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT)
-            {
-                running = false;
-            }
+                return;
         }
 
         const Uint8 *keys = SDL_GetKeyboardState(nullptr);
@@ -95,6 +95,7 @@ void Game::loop()
         if (SDL_HasIntersection(&p->rect, carrot) && p->s == PLAYER_SIZE)
         {
             score++;
+            p->stamina += (p->stamina < 10) ? 2 : 0;
             ui.update("Score: " + std::to_string(score), {0, 0, 0, 255}, uiFont, scoreTexture);
 
             carrot->x = rand() % (WIDTH - 20);
@@ -116,15 +117,43 @@ void Game::loop()
         SDL_RenderCopy(renderer, carrotTexture, nullptr, carrot);
 
         for (Enemy &e : *enemies)
-        {
             e.render(renderer);
-        }
         p->render(renderer);
 
         ui.render(scoreTexture, 10, 10);
-        ui.render(fpsTexture, 10, HEIGHT - 50);
+        ui.render(fpsTexture, 15, HEIGHT - 50);
+        ui.staminaCounter(p->stamina, carrotTexture);
 
         SDL_RenderPresent(renderer);
+
+        while (!running)
+        {
+            SDL_Event event;
+            while (SDL_PollEvent(&event))
+            {
+                if (event.type == SDL_QUIT)
+                    return;
+
+                if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RETURN)
+                {
+                    SDL_Delay(500);
+                    running = 1, score = 0, p->stamina = 0;
+                    enemies->clear();
+                    ui.update("Score: " + std::to_string(score), {0, 0, 0, 255}, uiFont, scoreTexture);
+                }
+            }
+
+            SDL_SetRenderDrawColor(renderer, 250, 250, 250, 255);
+            SDL_RenderClear(renderer);
+
+            int w;
+            int h;
+            SDL_QueryTexture(gameOverTexture, nullptr, nullptr, &w, &h);
+            ui.render(gameOverTexture, WIDTH / 2 - w / 2, HEIGHT / 2 - h / 2);
+            ui.render(scoreTexture, 10, 10);
+
+            SDL_RenderPresent(renderer);
+        }
     };
 }
 
@@ -135,6 +164,7 @@ void Game::quit()
     SDL_DestroyTexture(p->texture);
     SDL_DestroyTexture(scoreTexture);
     SDL_DestroyTexture(fpsTexture);
+    SDL_DestroyTexture(gameOverTexture);
     TTF_CloseFont(uiFont);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

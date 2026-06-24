@@ -33,3 +33,14 @@ void UI::fpsCounter(int &frameCount, float &timeAccumulator, float deltaTime, TT
         timeAccumulator -= 1.0f;
     }
 }
+
+void UI::staminaCounter(int stamina, SDL_Texture *&texture)
+{
+    SDL_Rect dstRect = {WIDTH - 18, 10, 15, 30};
+
+    for (int i = 0; i < stamina; ++i)
+    {
+        SDL_RenderCopy(renderer, texture, nullptr, &dstRect);
+        dstRect.x -= 18; // Move left for the next stamina icon
+    }
+}

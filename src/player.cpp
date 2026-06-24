@@ -12,12 +12,13 @@ Player::Player(float x_, float y_, float s_)
 
 void Player::update(bool left, bool right, bool up, bool down, bool jump, float dt)
 {
-    if (jump && onGround)
+    if (jump && onGround && stamina > 0)
     {
         vz = SPEED * 2;
         az = -SPEED * 4; // makes time of flight 1 second
         onGround = false;
         src.x = 0;
+        stamina--;
     }
     if (vz <= -SPEED * 2 && !onGround)
     {

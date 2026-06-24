@@ -12,6 +12,9 @@ public:
     float vx, vy;
     float s;
     float vz, az;
+
+    int stamina = 0;
+
     bool onGround = true;
     SDL_Rect rect;
 
