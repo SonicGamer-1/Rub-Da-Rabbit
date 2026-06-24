@@ -5,6 +5,7 @@
 #include "player.h"
 #include "game.h"
 #include "enemy.h"
+#include "ui.h"
 
 int main(int argc, char *argv[])
 {

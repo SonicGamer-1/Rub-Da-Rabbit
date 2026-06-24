@@ -7,12 +7,11 @@
 
 #include "player.h"
 #include "enemy.h"
+#include "ui.h"
 
 class Game
 {
     void enemyUpdate();
-    void textUpdate(const std::string &text, SDL_Color color, TTF_Font *font, SDL_Texture *&texture);
-    void textRender(SDL_Texture *texture, int x, int y);
 
     SDL_Rect *carrot;
 
@@ -28,6 +27,8 @@ class Game
 
     TTF_Font *uiFont = nullptr;
     SDL_Texture *scoreTexture = nullptr;
+    SDL_Texture *fpsTexture = nullptr;
+    UI ui = nullptr;
 
 public:
     void init();
