@@ -1,7 +1,9 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "player.h"
 #include "enemy.h"
@@ -9,6 +11,9 @@
 class Game
 {
     void enemyUpdate();
+    void textUpdate(const std::string &text, SDL_Color color, TTF_Font *font, SDL_Texture *&texture);
+    void textRender(SDL_Texture *texture, int x, int y);
+
     SDL_Rect *carrot;
 
     bool running = true;
@@ -20,6 +25,10 @@ class Game
 
     int score = 0;
     Enemy tempE;
+
+    TTF_Font *uiFont = nullptr;
+
+    SDL_Texture *scoreTexture = nullptr;
 
 public:
     void init();

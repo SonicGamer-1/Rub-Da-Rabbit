@@ -12,6 +12,8 @@ void Game::init()
     SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT);
 
     IMG_Init(IMG_INIT_PNG);
+    TTF_Init();
+    uiFont = TTF_OpenFont("assets/font.ttf", 24);
 
     srand((unsigned int)time(nullptr));
 
@@ -58,12 +60,28 @@ void Game::enemyUpdate()
     }
 }
 
+void Game::textUpdate(const std::string &text, SDL_Color color, TTF_Font *font, SDL_Texture *&texture)
+{
+    SDL_Surface *surface = TTF_RenderText_Solid(font, text.c_str(), color);
+    SDL_DestroyTexture(texture);
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+}
+void Game::textRender(SDL_Texture *texture, int x, int y)
+{
+    SDL_Rect dstRect = {x, y, 0, 0};
+    SDL_QueryTexture(texture, nullptr, nullptr, &dstRect.w, &dstRect.h);
+    SDL_RenderCopy(renderer, texture, nullptr, &dstRect);
+}
+
 void Game::loop()
 {
     Uint64 lastTime = SDL_GetPerformanceCounter();
 
     int frameCount = 0;
     float timeAccumulator = 0.0f;
+
+    textUpdate("Score:" + std::to_string(score), {0, 0, 0, 255}, uiFont, scoreTexture);
 
     while (running)
     {
@@ -97,6 +115,8 @@ void Game::loop()
         if (SDL_HasIntersection(&p->rect, carrot))
         {
             score++;
+            textUpdate("Score:" + std::to_string(score), {0, 0, 0, 255}, uiFont, scoreTexture);
+
             carrot->x = rand() % (WIDTH - 20);
             carrot->y = rand() % (HEIGHT - 40);
 
@@ -121,6 +141,8 @@ void Game::loop()
 
         SDL_RenderCopy(renderer, carrotTexture, nullptr, carrot);
 
+        textRender(scoreTexture, 10, 10);
+
         SDL_RenderPresent(renderer);
     };
 }
@@ -130,6 +152,7 @@ void Game::quit()
     SDL_DestroyTexture(carrotTexture);
     SDL_DestroyTexture(enemyTexture);
     SDL_DestroyTexture(p->texture);
+    TTF_CloseFont(uiFont);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
