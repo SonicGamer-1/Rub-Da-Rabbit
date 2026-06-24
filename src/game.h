@@ -27,7 +27,6 @@ class Game
     Enemy tempE;
 
     TTF_Font *uiFont = nullptr;
-
     SDL_Texture *scoreTexture = nullptr;
 
 public:
