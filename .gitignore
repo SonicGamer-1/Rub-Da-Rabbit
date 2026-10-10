@@ -1,0 +1,16 @@
+# ---- Build output ----
+/bin/
+/build/
+*.o
+*.obj
+*.exe
+*.out
+*.app
+*.dSYM/
+
+# ---- Runtime save data (high score) ----
+/save.dat
+
+# ---- OS / editor cruft ----
+.DS_Store
+Thumbs.db

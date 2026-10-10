@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "enemy.h"
 
 void Enemy::update(float dt, Player *p, bool &running)

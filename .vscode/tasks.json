@@ -15,6 +15,20 @@
                 "-lSDL2_ttf",
                 "-lSDL2_mixer"
             ],
+            "windows": {
+                "args": [
+                    "-std=c++17",
+                    "src/*.cpp",
+                    "-o",
+                    "bin/rubdarabbits",
+                    "-lmingw32",
+                    "-lSDL2main",
+                    "-lSDL2",
+                    "-lSDL2_image",
+                    "-lSDL2_ttf",
+                    "-lSDL2_mixer"
+                ]
+            },
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -22,6 +36,30 @@
             "problemMatcher": [
                 "$gcc"
             ]
+        },
+        {
+            "label": "Run",
+            "type": "shell",
+            "command": "./bin/rubdarabbits",
+            "windows": {
+                "command": "bin\\rubdarabbits.exe"
+            },
+            "dependsOn": [
+                "Build SDL"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "clean"
+            ],
+            "windows": {
+                "command": "mingw32-make"
+            },
+            "problemMatcher": []
         }
     ]
 }

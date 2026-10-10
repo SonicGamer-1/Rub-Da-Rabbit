@@ -1,6 +1,8 @@
+#include <cmath>
+#include <algorithm>
+
 #include "player.h"
 #include "consts.h"
-#include <algorithm>
 
 Player::Player(float x_, float y_, float s_)
     : x(x_), y(y_), s(s_)

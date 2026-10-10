@@ -1,9 +1,12 @@
 #include <SDL2/SDL_image.h>
 
-#include "consts.h"
-#include "game.h"
+#include <cmath>
+#include <cstdlib>
 #include <ctime>
 #include <fstream>
+
+#include "consts.h"
+#include "game.h"
 
 void Game::saveHighScore()
 {
