@@ -1,20 +1,31 @@
+#ifdef _WIN32
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
+#include <windows.h>
+#endif
+
 #include <SDL2/SDL.h>
 #include <vector>
 
 #include "consts.h"
-#include "player.h"
-#include "game.h"
 #include "enemy.h"
+#include "game.h"
+#include "player.h"
 #include "ui.h"
 
-int main(int argc, char *argv[])
-{
-    Game game;
+int main(int, char *[]) {
 
-    game.init();
+#ifdef _WIN32
+  SetProcessDPIAware();
+#endif
 
-    game.loop();
+  Game game;
 
-    game.quit();
-    return 0;
+  game.init();
+
+  game.loop();
+
+  game.quit();
+  return 0;
 }

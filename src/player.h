@@ -3,7 +3,7 @@
 
 class Player
 {
-    SDL_Point *center = new SDL_Point{(int)(s / 2), (int)(s / 2)};
+    SDL_Point center;
     SDL_Rect src = {0, 0, 32, 32};
     float animTime = 0;
 

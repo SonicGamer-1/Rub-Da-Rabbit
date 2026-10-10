@@ -7,6 +7,7 @@
 Player::Player(float x_, float y_, float s_)
     : x(x_), y(y_), s(s_)
 {
+    center = {(int)(s / 2), (int)(s / 2)};
     rect = {(int)x, (int)y, (int)s, (int)s};
     vx = 0, vy = 0;
     vz = 0, az = 0;
@@ -51,8 +52,8 @@ void Player::update(bool left, bool right, bool up, bool down, bool jump, float 
     y = std::clamp(y, 0.0f + (s / 2), HEIGHT - (s / 2));
 
     rect = {(int)(x - (s / 2)), (int)(y - (s / 2)), (int)s, (int)s};
-    center->x = (int)(s / 2);
-    center->y = (int)(s / 2);
+    center.x = (int)(s / 2);
+    center.y = (int)(s / 2);
 
     animTime += dt;
     if (animTime >= 0.25 / 3 && (vx != 0 || vy != 0) && onGround)
@@ -67,5 +68,5 @@ void Player::update(bool left, bool right, bool up, bool down, bool jump, float 
 
 void Player::render(SDL_Renderer *renderer)
 {
-    SDL_RenderCopyEx(renderer, texture, &src, &rect, atan2f(vy, vx) * 180.0f / 3.14159265f + 90.0f, center, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, texture, &src, &rect, atan2f(vy, vx) * 180.0f / 3.14159265f + 90.0f, &center, SDL_FLIP_NONE);
 }
