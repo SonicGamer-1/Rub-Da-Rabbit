@@ -1,5 +1,3 @@
-#include <SDL2/SDL_image.h>
-
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
@@ -35,7 +33,7 @@ void Game::init() {
   renderer = SDL_CreateRenderer(
       window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
   SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT);
-
+  Mix_Init(MIX_INIT_MP3 | MIX_INIT_OGG);
   IMG_Init(IMG_INIT_PNG);
   TTF_Init();
 
@@ -49,9 +47,17 @@ void Game::init() {
   this->p = new Player{10.0f, 10.0f, PLAYER_SIZE};
   carrot = new SDL_Rect{WIDTH - 30, HEIGHT - 50, 20, 40};
 
-  p->texture = IMG_LoadTexture(renderer, "assets/player.png");
-  carrotTexture = IMG_LoadTexture(renderer, "assets/carrot.png");
-  enemyTexture = IMG_LoadTexture(renderer, "assets/enemy.png");
+  bgMusic = Mix_LoadMUS("assets/audio/bg_music.mp3");
+  Mix_PlayMusic(bgMusic, -1);
+
+  jumpSound = Mix_LoadWAV("assets/audio/jump.wav");
+  staminaSound = Mix_LoadWAV("assets/audio/stamina.wav");
+  gameOverSound = Mix_LoadWAV("assets/audio/game_over.wav");
+  chaseSound = Mix_LoadWAV("assets/audio/chase.wav");
+
+  p->texture = IMG_LoadTexture(renderer, "assets/image/player.png");
+  carrotTexture = IMG_LoadTexture(renderer, "assets/image/carrot.png");
+  enemyTexture = IMG_LoadTexture(renderer, "assets/image/enemy.png");
   tempE.texture = enemyTexture;
 }
 
@@ -116,6 +122,7 @@ void Game::loop() {
     if (SDL_HasIntersection(&p->rect, carrot) && p->s == PLAYER_SIZE) {
       score++;
       p->stamina += (p->stamina < 10) ? 2 : 0;
+      Mix_PlayChannel(-1, staminaSound, 0);
       ui.update("Score: " + std::to_string(score), {0, 0, 0, 255}, uiFont,
                 scoreTexture);
 

@@ -30,6 +30,8 @@ grab, the higher your score — but every carrot also spawns another enemy.
 - [SDL2_mixer](https://www.libsdl.org/projects/SDL_mixer/) (linked, not currently used)
 
 `make` (Linux/macOS) or `mingw32-make` (Windows) is needed for the Makefile build.
+The platform is detected automatically, or can be selected explicitly with
+`PLATFORM=linux` or `PLATFORM=windows`.
 
 ## Building
 
@@ -38,8 +40,9 @@ grab, the higher your score — but every carrot also spawns another enemy.
 ```sh
 sudo apt update
 sudo apt install g++ make libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
-make          # builds bin/rubdarabbits
-make run      # builds and runs
+make                  # builds bin/rubdarabbits
+make PLATFORM=linux   # explicitly select the Linux build
+make run              # builds and runs
 ```
 
 ### Windows (MSYS2 / MinGW)
@@ -48,8 +51,9 @@ Install MSYS2 and open an **MSYS2 MINGW64** shell, then:
 
 ```sh
 pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_ttf mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-make
-mingw32-make          # builds bin/rubdarabbits.exe
-mingw32-make run      # builds and runs
+mingw32-make                    # builds bin/rubdarabbits.exe
+mingw32-make PLATFORM=windows  # explicitly select the Windows build
+mingw32-make run                # builds and runs
 ```
 
 ### Manual build (no Makefile)

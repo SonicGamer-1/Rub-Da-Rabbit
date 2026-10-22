@@ -1,27 +1,26 @@
 #pragma once
 #include <SDL2/SDL.h>
 
-class Player
-{
-    SDL_Point center;
-    SDL_Rect src = {0, 0, 32, 32};
-    float animTime = 0;
+class Player {
+  SDL_Point center;
+  SDL_Rect src = {0, 0, 32, 32};
+  float animTime = 0;
 
 public:
-    float x, y;
-    float vx, vy;
-    float s;
-    float vz, az;
+  float x, y;
+  float vx, vy;
+  float s;
+  float vz, az;
 
-    int stamina = 0;
+  int stamina = 0;
 
-    bool onGround = true;
-    SDL_Rect rect;
+  bool onGround = true;
+  SDL_Rect rect;
 
-    SDL_Texture *texture = nullptr;
+  SDL_Texture *texture = nullptr;
 
-    Player(float x_, float y_, float s_);
+  Player(float x_, float y_, float s_);
 
-    void update(bool left, bool right, bool up, bool down, bool jump, float dt);
-    void render(SDL_Renderer *renderer);
+  void update(bool left, bool right, bool up, bool down, bool jump, float dt);
+  void render(SDL_Renderer *renderer);
 };

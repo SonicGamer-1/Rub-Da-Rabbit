@@ -1,63 +1,69 @@
 # Cross-platform Makefile for Rub-Da-Rabbit.
-# Build on Linux/macOS with `make` and on Windows with `mingw32-make`.
-# The Windows path works from cmd.exe (no POSIX shell required).
+#
+# The platform is detected automatically. Override it when needed:
+#   make PLATFORM=linux
+#   mingw32-make PLATFORM=windows
+
+PLATFORM ?= auto
+
+ifeq ($(PLATFORM),auto)
+  ifeq ($(OS),Windows_NT)
+    PLATFORM := windows
+  else
+    PLATFORM := linux
+  endif
+endif
+
+ifneq ($(filter linux windows,$(PLATFORM)),$(PLATFORM))
+  $(error PLATFORM must be linux or windows)
+endif
 
 CXX      := g++
 CXXFLAGS := -std=c++17 -Wall -Wextra -O2
-LDFLAGS  :=
 LDLIBS   := -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 
-# Platform-specific tools and libraries: cmd.exe uses different commands
-# than POSIX shells, and MinGW needs SDL2's main/entry library.
-ifeq ($(OS),Windows_NT)
+ifeq ($(PLATFORM),windows)
   EXE            := .exe
-  MKDIR           = if not exist $(patsubst %/,%,$(dir $@)) mkdir $(patsubst %/,%,$(dir $@))
-  RM             := del /Q
-  RMDIR          := rmdir /S /Q
   SDL2_MAIN_LIBS := -lmingw32 -lSDL2main
+  MKDIR          = if not exist $(1) mkdir $(1)
+  RMDIR          = if exist $(1) rmdir /S /Q $(1)
+  RM_TARGET      = if exist $(subst /,\,$(TARGET)) del /Q $(subst /,\,$(TARGET))
+  RUN            = $(TARGET)
 else
   EXE            :=
-  MKDIR           = mkdir -p $(dir $@)
-  RM             := rm -f
-  RMDIR          := rm -rf
   SDL2_MAIN_LIBS :=
+  MKDIR          = mkdir -p $(1)
+  RMDIR          = rm -rf $(1)
+  RM_TARGET      = rm -f $(TARGET)
+  RUN            = ./$(TARGET)
 endif
 
 TARGET   := bin/rubdarabbits$(EXE)
-
-# cmd.exe's built-in `del` needs backslash separators in paths.
-ifeq ($(OS),Windows_NT)
-  TARGET_WS := $(subst /,\,$(TARGET))
-else
-  TARGET_WS := $(TARGET)
-endif
-
 SRCDIR   := src
 BUILDDIR := build
 
 SRCS := $(wildcard $(SRCDIR)/*.cpp)
-OBJS := $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(SRCS))
+OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(BUILDDIR)/%.o)
 
 .PHONY: all debug clean run
 
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
-	$(MKDIR)
-	$(CXX) $(LDFLAGS) $(OBJS) -o $@ $(SDL2_MAIN_LIBS) $(LDLIBS)
+$(TARGET): $(OBJS) | bin
+	$(CXX) $(OBJS) -o $@ $(SDL2_MAIN_LIBS) $(LDLIBS)
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
-	$(MKDIR)
+$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp | build
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Debug build: run `make clean && make debug` so object files are rebuilt
-# with the debug flags (make does not recompile when only flags change).
-debug: CXXFLAGS += -g -O0
-debug: $(TARGET)
+bin build:
+	@$(call MKDIR,$@)
 
-run: $(TARGET)
-	$(TARGET)
+debug: clean
+	$(MAKE) all CXXFLAGS="$(CXXFLAGS) -g -O0"
+
+run: all
+	$(RUN)
 
 clean:
-	-$(RMDIR) $(BUILDDIR)
-	-$(RM) $(TARGET_WS)
+	@$(call RMDIR,$(BUILDDIR))
+	@$(RM_TARGET)
