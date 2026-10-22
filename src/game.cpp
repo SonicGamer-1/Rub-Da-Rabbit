@@ -53,7 +53,6 @@ void Game::init() {
   jumpSound = Mix_LoadWAV("assets/audio/jump.wav");
   staminaSound = Mix_LoadWAV("assets/audio/stamina.wav");
   gameOverSound = Mix_LoadWAV("assets/audio/game_over.wav");
-  chaseSound = Mix_LoadWAV("assets/audio/chase.wav");
 
   p->texture = IMG_LoadTexture(renderer, "assets/image/player.png");
   carrotTexture = IMG_LoadTexture(renderer, "assets/image/carrot.png");
@@ -115,9 +114,16 @@ void Game::loop() {
     }
 
     const Uint8 *keys = SDL_GetKeyboardState(nullptr);
+
+    if (keys[SDL_SCANCODE_SPACE] && p->s == PLAYER_SIZE && p->stamina > 0)
+      Mix_PlayChannel(-1, jumpSound, 0);
     p->update(keys[SDL_SCANCODE_A], keys[SDL_SCANCODE_D], keys[SDL_SCANCODE_W],
               keys[SDL_SCANCODE_S], keys[SDL_SCANCODE_SPACE], deltaTime);
+
     enemyUpdate();
+
+    if (!running)
+      Mix_PlayChannel(-1, gameOverSound, 0);
 
     if (SDL_HasIntersection(&p->rect, carrot) && p->s == PLAYER_SIZE) {
       score++;

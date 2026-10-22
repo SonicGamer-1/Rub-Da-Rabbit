@@ -28,7 +28,7 @@ class Game {
   Mix_Chunk *jumpSound = nullptr;
   Mix_Chunk *staminaSound = nullptr;
   Mix_Chunk *gameOverSound = nullptr;
-  Mix_Chunk *chaseSound = nullptr;
+
   Mix_Music *bgMusic = nullptr;
 
   int score = 0;
