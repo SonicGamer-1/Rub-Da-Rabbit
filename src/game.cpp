@@ -33,7 +33,10 @@ void Game::init() {
   renderer = SDL_CreateRenderer(
       window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
   SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT);
-  Mix_Init(MIX_INIT_MP3 | MIX_INIT_OGG);
+
+  Mix_Init(MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_FLAC);
+  Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+
   IMG_Init(IMG_INIT_PNG);
   TTF_Init();
 
@@ -52,6 +55,10 @@ void Game::init() {
   Mix_PlayMusic(bgMusic, -1);
 
   jumpSound = Mix_LoadWAV(JUMP_SOUND_PATH);
+  if (jumpSound == nullptr) {
+    SDL_Log("Failed to load jump sound '%s': %s", JUMP_SOUND_PATH,
+            Mix_GetError());
+  }
   eatSound = Mix_LoadWAV(STAMINA_SOUND_PATH);
   gameOverSound = Mix_LoadWAV(GAME_OVER_SOUND_PATH);
 

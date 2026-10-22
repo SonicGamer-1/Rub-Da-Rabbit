@@ -26,7 +26,7 @@ void Enemy::update(float dt, Player *p, bool &running) {
   center->y = (int)(ENEMY_SIZE / 2);
 
   animTime += dt;
-  if (animTime >= 0.25 / 3) {
+  if (animTime >= 0.25 / ENEMY_SPEED * 200) {
     animTime = 0;
     if (src.x == 32 * 5)
       src.x = 0;
