@@ -96,6 +96,19 @@ void Game::enemyUpdate() {
   }
 }
 
+void Game::playerUpdate(const Uint8 *keys) {
+  if (keys[SDL_SCANCODE_SPACE] && p->s == PLAYER_SIZE && p->stamina > 0)
+    Mix_PlayChannel(-1, jumpSound, 0);
+
+  if ((keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_W] ||
+       keys[SDL_SCANCODE_S]) &&
+      p->s == PLAYER_SIZE)
+    Mix_PlayChannel(-1, runSound, 0);
+
+  p->update(keys[SDL_SCANCODE_A], keys[SDL_SCANCODE_D], keys[SDL_SCANCODE_W],
+            keys[SDL_SCANCODE_S], keys[SDL_SCANCODE_SPACE], deltaTime);
+}
+
 void Game::loop() {
   Uint64 lastTime = SDL_GetPerformanceCounter();
 
@@ -123,10 +136,7 @@ void Game::loop() {
 
     const Uint8 *keys = SDL_GetKeyboardState(nullptr);
 
-    if (keys[SDL_SCANCODE_SPACE] && p->s == PLAYER_SIZE && p->stamina > 0)
-      Mix_PlayChannel(-1, jumpSound, 0);
-    p->update(keys[SDL_SCANCODE_A], keys[SDL_SCANCODE_D], keys[SDL_SCANCODE_W],
-              keys[SDL_SCANCODE_S], keys[SDL_SCANCODE_SPACE], deltaTime);
+    playerUpdate(keys);
 
     enemyUpdate();
 

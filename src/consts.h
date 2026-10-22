@@ -21,8 +21,7 @@ inline constexpr const char *SAVE_FILE = "save.dat";
 
 inline constexpr const char *FONT_PATH = "assets/font.ttf";
 
-inline constexpr const char *BACKGROUND_MUSIC_PATH =
-    "assets/audio/bg_music.mp3";
+inline constexpr const char *BACKGROUND_MUSIC_PATH = "assets/audio/bgm.mp3";
 
 inline constexpr const char *JUMP_SOUND_PATH = "assets/audio/jump.flac";
 inline constexpr const char *STAMINA_SOUND_PATH = "assets/audio/eat.wav";

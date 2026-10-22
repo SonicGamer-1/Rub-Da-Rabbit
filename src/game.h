@@ -13,6 +13,7 @@
 
 class Game {
   void enemyUpdate();
+  void playerUpdate(const Uint8 *keys);
   void saveHighScore();
   void loadHighScore();
 
@@ -26,7 +27,9 @@ class Game {
   SDL_Texture *enemyTexture = nullptr;
 
   Mix_Chunk *jumpSound = nullptr;
+  Mix_Chunk *runSound = nullptr;
   Mix_Chunk *eatSound = nullptr;
+  Mix_Chunk *chaserSound = nullptr;
   Mix_Chunk *gameOverSound = nullptr;
 
   Mix_Music *bgMusic = nullptr;
