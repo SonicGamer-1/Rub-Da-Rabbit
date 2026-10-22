@@ -26,7 +26,7 @@ class Game {
   SDL_Texture *enemyTexture = nullptr;
 
   Mix_Chunk *jumpSound = nullptr;
-  Mix_Chunk *staminaSound = nullptr;
+  Mix_Chunk *eatSound = nullptr;
   Mix_Chunk *gameOverSound = nullptr;
 
   Mix_Music *bgMusic = nullptr;

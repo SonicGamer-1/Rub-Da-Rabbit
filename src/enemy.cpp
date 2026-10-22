@@ -9,21 +9,21 @@ void Enemy::update(float dt, Player *p, bool &running) {
 
   float dz = p->s - PLAYER_SIZE;
 
-  if (distance <= PLAYER_SIZE / 2.5 && dz == 0) {
+  if (distance <= (PLAYER_SIZE + ENEMY_SIZE) / 5 && dz == 0) {
     running = false;
     return;
   }
 
-  vx = (dx / distance) * SPEED;
-  vy = (dy / distance) * SPEED;
+  vx = (dx / distance) * ENEMY_SPEED;
+  vy = (dy / distance) * ENEMY_SPEED;
 
   x += vx * dt;
   y += vy * dt;
 
-  rect = {(int)(x - (PLAYER_SIZE / 2)), (int)(y - (PLAYER_SIZE / 2)),
-          PLAYER_SIZE, PLAYER_SIZE};
-  center->x = (int)(PLAYER_SIZE / 2);
-  center->y = (int)(PLAYER_SIZE / 2);
+  rect = {(int)(x - (ENEMY_SIZE / 2)), (int)(y - (ENEMY_SIZE / 2)), ENEMY_SIZE,
+          ENEMY_SIZE};
+  center->x = (int)(ENEMY_SIZE / 2);
+  center->y = (int)(ENEMY_SIZE / 2);
 
   animTime += dt;
   if (animTime >= 0.25 / 3) {

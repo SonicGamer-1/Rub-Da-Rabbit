@@ -7,14 +7,14 @@
 #include "game.h"
 
 void Game::saveHighScore() {
-  std::ofstream file("save.dat", std::ios::binary);
+  std::ofstream file(SAVE_FILE, std::ios::binary);
 
   if (file) {
     file.write(reinterpret_cast<char *>(&highScore), sizeof(highScore));
   }
 }
 void Game::loadHighScore() {
-  std::ifstream file("save.dat", std::ios::binary);
+  std::ifstream file(SAVE_FILE, std::ios::binary);
 
   if (file) {
     file.read(reinterpret_cast<char *>(&highScore), sizeof(highScore));
@@ -27,7 +27,7 @@ void Game::init() {
 
   SDL_Init(SDL_INIT_EVERYTHING);
 
-  window = SDL_CreateWindow("Rub da Rabbits", SDL_WINDOWPOS_CENTERED,
+  window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED,
                             SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT,
                             SDL_WINDOW_RESIZABLE);
   renderer = SDL_CreateRenderer(
@@ -38,25 +38,26 @@ void Game::init() {
   TTF_Init();
 
   ui = UI(renderer);
-  uiFont = TTF_OpenFont("assets/font.ttf", 36);
+  uiFont = TTF_OpenFont(FONT_PATH, 36);
 
   srand((unsigned int)time(nullptr));
   loadHighScore();
 
   this->enemies = new std::vector<Enemy>;
   this->p = new Player{10.0f, 10.0f, PLAYER_SIZE};
-  carrot = new SDL_Rect{WIDTH - 30, HEIGHT - 50, 20, 40};
 
-  bgMusic = Mix_LoadMUS("assets/audio/bg_music.mp3");
+  carrot = new SDL_Rect{WIDTH - 30, HEIGHT - 50, CARROT_WIDTH, CARROT_HEIGHT};
+
+  bgMusic = Mix_LoadMUS(BACKGROUND_MUSIC_PATH);
   Mix_PlayMusic(bgMusic, -1);
 
-  jumpSound = Mix_LoadWAV("assets/audio/jump.wav");
-  staminaSound = Mix_LoadWAV("assets/audio/stamina.wav");
-  gameOverSound = Mix_LoadWAV("assets/audio/game_over.wav");
+  jumpSound = Mix_LoadWAV(JUMP_SOUND_PATH);
+  eatSound = Mix_LoadWAV(STAMINA_SOUND_PATH);
+  gameOverSound = Mix_LoadWAV(GAME_OVER_SOUND_PATH);
 
-  p->texture = IMG_LoadTexture(renderer, "assets/image/player.png");
-  carrotTexture = IMG_LoadTexture(renderer, "assets/image/carrot.png");
-  enemyTexture = IMG_LoadTexture(renderer, "assets/image/enemy.png");
+  p->texture = IMG_LoadTexture(renderer, PLAYER_TEXTURE_PATH);
+  carrotTexture = IMG_LoadTexture(renderer, CARROT_TEXTURE_PATH);
+  enemyTexture = IMG_LoadTexture(renderer, ENEMY_TEXTURE_PATH);
   tempE.texture = enemyTexture;
 }
 
@@ -70,7 +71,7 @@ void Game::enemyUpdate() {
       float dy = (*enemies)[j].y - (*enemies)[i].y;
 
       float dist = sqrtf(dx * dx + dy * dy);
-      float minDist = PLAYER_SIZE;
+      float minDist = ENEMY_SIZE;
 
       if (dist > 0.0f && dist < minDist) {
         float overlap = minDist - dist;
@@ -127,20 +128,22 @@ void Game::loop() {
 
     if (SDL_HasIntersection(&p->rect, carrot) && p->s == PLAYER_SIZE) {
       score++;
-      p->stamina += (p->stamina < 10) ? 2 : 0;
-      Mix_PlayChannel(-1, staminaSound, 0);
+      p->stamina += (p->stamina < MAX_STAMINA) ? STAMINA_RESTORE : 0;
+      Mix_PlayChannel(-1, eatSound, 0);
       ui.update("Score: " + std::to_string(score), {0, 0, 0, 255}, uiFont,
                 scoreTexture);
 
       carrot->x = rand() % (WIDTH - 20);
       carrot->y = rand() % (HEIGHT - 40);
 
-      tempE.x = (float)(rand() % (WIDTH - PLAYER_SIZE));
-      tempE.y = (float)(rand() % (HEIGHT - PLAYER_SIZE));
-      if (abs(tempE.x - p->x) < 4 * PLAYER_SIZE &&
-          abs(tempE.y - p->y) < 4 * PLAYER_SIZE) {
-        tempE.x += ((tempE.x - p->x) > 0 ? +1 : -1) * PLAYER_SIZE * 3;
-        tempE.y += ((tempE.y - p->y) > 0 ? +1 : -1) * PLAYER_SIZE * 3;
+      tempE.x = (float)(rand() % (WIDTH - ENEMY_SIZE));
+      tempE.y = (float)(rand() % (HEIGHT - ENEMY_SIZE));
+      if (abs(tempE.x - p->x) < ENEMY_MIN_DISTANCE * PLAYER_SIZE &&
+          abs(tempE.y - p->y) < ENEMY_MIN_DISTANCE * PLAYER_SIZE) {
+        tempE.x +=
+            ((tempE.x - p->x) > 0 ? +1 : -1) * PLAYER_SIZE * ENEMY_MIN_DISTANCE;
+        tempE.y +=
+            ((tempE.y - p->y) > 0 ? +1 : -1) * PLAYER_SIZE * ENEMY_MIN_DISTANCE;
       }
       enemies->push_back(tempE);
     }
