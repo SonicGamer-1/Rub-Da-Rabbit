@@ -35,7 +35,7 @@ void Game::init() {
   SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT);
 
   Mix_Init(MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_FLAC);
-  Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+  Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, AUDIO_CHANNELS, 2048);
 
   IMG_Init(IMG_INIT_PNG);
   TTF_Init();
@@ -52,14 +52,12 @@ void Game::init() {
   carrot = new SDL_Rect{WIDTH - 30, HEIGHT - 50, CARROT_WIDTH, CARROT_HEIGHT};
 
   bgMusic = Mix_LoadMUS(BACKGROUND_MUSIC_PATH);
+  Mix_VolumeMusic(BGM_VOLUME);
   Mix_PlayMusic(bgMusic, -1);
 
   jumpSound = Mix_LoadWAV(JUMP_SOUND_PATH);
-  if (jumpSound == nullptr) {
-    SDL_Log("Failed to load jump sound '%s': %s", JUMP_SOUND_PATH,
-            Mix_GetError());
-  }
   eatSound = Mix_LoadWAV(STAMINA_SOUND_PATH);
+  runSound = Mix_LoadWAV(RUN_SOUND_PATH);
   gameOverSound = Mix_LoadWAV(GAME_OVER_SOUND_PATH);
 
   p->texture = IMG_LoadTexture(renderer, PLAYER_TEXTURE_PATH);
@@ -69,6 +67,11 @@ void Game::init() {
   tempE.texture = enemyTexture;
   tempE.vx = 0.0f;
   tempE.vy = 0.0f;
+
+  Mix_VolumeChunk(jumpSound, JUMP_SOUND_VOLUME);
+  Mix_VolumeChunk(runSound, RUN_SOUND_VOLUME);
+  Mix_VolumeChunk(eatSound, STAMINA_SOUND_VOLUME);
+  Mix_VolumeChunk(gameOverSound, GAME_OVER_SOUND_VOLUME);
 }
 
 void Game::enemyUpdate() {
@@ -105,8 +108,10 @@ void Game::playerUpdate(const Uint8 *keys) {
 
   if ((keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_W] ||
        keys[SDL_SCANCODE_S]) &&
-      p->s == PLAYER_SIZE)
-    ; // Mix_PlayChannel(-1, runSound, 0);
+      p->s == PLAYER_SIZE && !Mix_Playing(RUN_AUDIO_CHANNEL))
+    Mix_PlayChannel(RUN_AUDIO_CHANNEL, runSound, 0);
+  else
+    Mix_HaltChannel(RUN_AUDIO_CHANNEL);
 
   p->update(keys[SDL_SCANCODE_A], keys[SDL_SCANCODE_D], keys[SDL_SCANCODE_W],
             keys[SDL_SCANCODE_S], keys[SDL_SCANCODE_SPACE], deltaTime);
@@ -149,7 +154,7 @@ void Game::loop() {
     if (SDL_HasIntersection(&p->rect, carrot) && p->s == PLAYER_SIZE) {
       score++;
       p->stamina += (p->stamina < MAX_STAMINA) ? STAMINA_RESTORE : 0;
-      // Mix_PlayChannel(-1, eatSound, 0);
+      Mix_PlayChannel(-1, eatSound, 0);
       ui.update("Score: " + std::to_string(score), {0, 0, 0, 255}, uiFont,
                 scoreTexture);
 

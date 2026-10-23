@@ -1,4 +1,5 @@
 #pragma once
+#include <SDL2/SDL_mixer.h>
 
 inline constexpr int WIDTH = 1600;
 inline constexpr int HEIGHT = 900;
@@ -21,12 +22,24 @@ inline constexpr const char *SAVE_FILE = "save.dat";
 
 inline constexpr const char *FONT_PATH = "assets/font.ttf";
 
+inline constexpr const int AUDIO_CHANNELS = 8;
+
 inline constexpr const char *BACKGROUND_MUSIC_PATH = "assets/audio/bgm.mp3";
+inline constexpr const int BGM_VOLUME = MIX_MAX_VOLUME / 2;
 
 inline constexpr const char *JUMP_SOUND_PATH = "assets/audio/jump.flac";
-inline constexpr const char *STAMINA_SOUND_PATH = "assets/audio/eat.wav";
+inline constexpr const int JUMP_SOUND_VOLUME = MIX_MAX_VOLUME / 2;
+
+inline constexpr const char *RUN_SOUND_PATH = "assets/audio/run.mp3";
+inline constexpr const int RUN_AUDIO_CHANNEL = 7;
+inline constexpr const int RUN_SOUND_VOLUME = MIX_MAX_VOLUME;
+
+inline constexpr const char *STAMINA_SOUND_PATH = "assets/audio/eat.mp3";
+inline constexpr const int STAMINA_SOUND_VOLUME = MIX_MAX_VOLUME;
+
 inline constexpr const char *GAME_OVER_SOUND_PATH =
     "assets/audio/game_over.wav";
+inline constexpr const int GAME_OVER_SOUND_VOLUME = MIX_MAX_VOLUME;
 
 inline constexpr const char *PLAYER_TEXTURE_PATH = "assets/image/player.png";
 inline constexpr const char *CARROT_TEXTURE_PATH = "assets/image/carrot.png";

@@ -5,6 +5,8 @@ class Player {
   SDL_Point center;
   SDL_Rect src = {0, 0, 32, 32};
   float animTime = 0;
+  float facingVx = 0.0f;
+  float facingVy = 1.0f;
 
 public:
   float x, y;

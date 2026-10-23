@@ -36,6 +36,11 @@ void Player::update(bool left, bool right, bool up, bool down, bool jump,
     vy = -(up - down) * PLAYER_SPEED * (!onGround ? 1.5f : 1.0f);
   }
 
+  if (vx != 0.0f || vy != 0.0f) {
+    facingVx = vx;
+    facingVy = vy;
+  }
+
   x += vx * dt;
   y += vy * dt;
 
@@ -62,6 +67,7 @@ void Player::update(bool left, bool right, bool up, bool down, bool jump,
 
 void Player::render(SDL_Renderer *renderer) {
   SDL_RenderCopyEx(renderer, texture, &src, &rect,
-                   atan2f(vy, vx) * 180.0f / 3.14159265f + 90.0f, &center,
+                   atan2f(facingVy, facingVx) * 180.0f / 3.14159265f + 90.0f,
+                   &center,
                    SDL_FLIP_NONE);
 }
