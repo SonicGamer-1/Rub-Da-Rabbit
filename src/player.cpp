@@ -20,7 +20,7 @@ void Player::update(bool left, bool right, bool up, bool down, bool jump,
     src.x = 0;
     stamina--;
   }
-  if (vz <= -PLAYER_SPEED * 2 && !onGround) {
+  if (!onGround && vz < 0 && s <= PLAYER_SIZE) {
     s = PLAYER_SIZE;
     vz = 0;
     az = 0;

@@ -14,6 +14,9 @@ void Enemy::update(float dt, Player *p, bool &running) {
     return;
   }
 
+  if (distance == 0.0f)
+    return;
+
   vx = (dx / distance) * ENEMY_SPEED;
   vy = (dy / distance) * ENEMY_SPEED;
 

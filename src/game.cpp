@@ -65,7 +65,10 @@ void Game::init() {
   p->texture = IMG_LoadTexture(renderer, PLAYER_TEXTURE_PATH);
   carrotTexture = IMG_LoadTexture(renderer, CARROT_TEXTURE_PATH);
   enemyTexture = IMG_LoadTexture(renderer, ENEMY_TEXTURE_PATH);
+
   tempE.texture = enemyTexture;
+  tempE.vx = 0.0f;
+  tempE.vy = 0.0f;
 }
 
 void Game::enemyUpdate() {
@@ -103,7 +106,7 @@ void Game::playerUpdate(const Uint8 *keys) {
   if ((keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_W] ||
        keys[SDL_SCANCODE_S]) &&
       p->s == PLAYER_SIZE)
-    Mix_PlayChannel(-1, runSound, 0);
+    ; // Mix_PlayChannel(-1, runSound, 0);
 
   p->update(keys[SDL_SCANCODE_A], keys[SDL_SCANCODE_D], keys[SDL_SCANCODE_W],
             keys[SDL_SCANCODE_S], keys[SDL_SCANCODE_SPACE], deltaTime);
@@ -146,7 +149,7 @@ void Game::loop() {
     if (SDL_HasIntersection(&p->rect, carrot) && p->s == PLAYER_SIZE) {
       score++;
       p->stamina += (p->stamina < MAX_STAMINA) ? STAMINA_RESTORE : 0;
-      Mix_PlayChannel(-1, eatSound, 0);
+      // Mix_PlayChannel(-1, eatSound, 0);
       ui.update("Score: " + std::to_string(score), {0, 0, 0, 255}, uiFont,
                 scoreTexture);
 
@@ -162,6 +165,8 @@ void Game::loop() {
         tempE.y +=
             ((tempE.y - p->y) > 0 ? +1 : -1) * PLAYER_SIZE * ENEMY_MIN_DISTANCE;
       }
+      tempE.rect = {(int)(tempE.x - (ENEMY_SIZE / 2)),
+                    (int)(tempE.y - (ENEMY_SIZE / 2)), ENEMY_SIZE, ENEMY_SIZE};
       enemies->push_back(tempE);
     }
 
