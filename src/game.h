@@ -43,6 +43,7 @@ class Game {
 
   TTF_Font *uiFont = nullptr;
   SDL_Texture *scoreTexture = nullptr;
+  SDL_Texture *highScoreTexture = nullptr;
   SDL_Texture *fpsTexture = nullptr;
   SDL_Texture *gameOverTexture = nullptr;
   UI ui = nullptr;

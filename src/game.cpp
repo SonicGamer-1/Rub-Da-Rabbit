@@ -193,6 +193,7 @@ void Game::carrotUpdate() {
 
     tempE.x = (float)(rand() % (WIDTH - ENEMY_SIZE));
     tempE.y = (float)(rand() % (HEIGHT - ENEMY_SIZE));
+
     if (abs(tempE.x - p->x) < ENEMY_MIN_DISTANCE * PLAYER_SIZE &&
         abs(tempE.y - p->y) < ENEMY_MIN_DISTANCE * PLAYER_SIZE) {
       tempE.x +=
@@ -200,6 +201,7 @@ void Game::carrotUpdate() {
       tempE.y +=
           ((tempE.y - p->y) > 0 ? +1 : -1) * PLAYER_SIZE * ENEMY_MIN_DISTANCE;
     }
+
     tempE.rect = {(int)(tempE.x - (ENEMY_SIZE / 2)),
                   (int)(tempE.y - (ENEMY_SIZE / 2)), ENEMY_SIZE, ENEMY_SIZE};
     enemies->push_back(tempE);
@@ -214,6 +216,8 @@ void Game::loop() {
 
   ui.update("Score: " + std::to_string(score), {0, 0, 0, 255}, uiFont,
             scoreTexture);
+  ui.update("High Score: " + std::to_string(highScore), {0, 0, 0, 255}, uiFont,
+            highScoreTexture);
   ui.update("Game Over! Press Enter to Restart", {0, 0, 0, 255}, uiFont,
             gameOverTexture);
 
@@ -251,16 +255,17 @@ void Game::loop() {
       e.render(renderer);
     p->render(renderer);
 
-    ui.render(scoreTexture, 10, 10);
-    ui.render(fpsTexture, 15, HEIGHT - 50);
-    ui.staminaCounter(p->stamina, carrotTexture);
-
-    SDL_RenderPresent(renderer);
-
     if (score > highScore) {
       saveHighScore();
       highScore = score;
     }
+
+    ui.render(scoreTexture, 10, 10);
+    ui.render(fpsTexture, 15, HEIGHT - 50);
+    ui.render(highScoreTexture, 10, 50);
+    ui.staminaCounter(p->stamina, carrotTexture);
+
+    SDL_RenderPresent(renderer);
 
     while (!running) {
       SDL_Event event;
@@ -285,6 +290,7 @@ void Game::loop() {
       SDL_QueryTexture(gameOverTexture, nullptr, nullptr, &w, &h);
       ui.render(gameOverTexture, WIDTH / 2 - w / 2, HEIGHT / 2 - h / 2);
       ui.render(scoreTexture, 10, 10);
+      ui.render(highScoreTexture, 10, 50);
 
       SDL_RenderPresent(renderer);
     }
