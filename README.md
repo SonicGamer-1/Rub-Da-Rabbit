@@ -7,8 +7,10 @@ grab, the higher your score — but every carrot also spawns another enemy.
 ## Features
 
 - Collect carrots to raise your score (each carrot is worth 1 point).
-- Enemies chase you and end the game on contact.
-- A stamina system: jumping costs stamina, and collecting carrots restores it.
+- Enemies chase you and end the game on contact when you are on the ground.
+- Jumping temporarily makes you harder for enemies to hit and increases movement speed, but costs 1 stamina.
+- Collecting a carrot restores up to 2 stamina and spawns another enemy.
+- Enemy has proximity audio.
 - Persistent high score, saved to `save.dat` next to the executable.
 - 1600×900 resizable window with a fixed logical resolution.
 
@@ -20,6 +22,11 @@ grab, the higher your score — but every carrot also spawns another enemy.
 | `A` / `D` | Move left / right       |
 | `Space`   | Jump (costs 1 stamina)  |
 | `Enter`   | Restart after game over |
+
+The game displays the current score, high score, and FPS in the upper-left and
+lower-left corners. A run starts with no enemies; each collected carrot adds one
+enemy to the arena. The high score is updated during play and survives
+restarts.
 
 ## Dependencies
 
@@ -76,14 +83,27 @@ g++ -std=c++17 src/*.cpp -o bin/rubdarabbits -lmingw32 -lSDL2main -lSDL2 -lSDL2_
   rebuild with debug flags).
 - `make clean` — remove `build/` and the compiled binary.
 
+## Running
+
+Run the executable from the repository root so the relative `assets/` paths can
+be resolved:
+
+```sh
+make run                  # Linux/macOS
+mingw32-make run          # Windows/MSYS2
+```
+
+If you build manually, launch `bin/rubdarabbits` or
+`bin/rubdarabbits.exe` from the repository root rather than changing into
+`bin/`.
+
 ## Project structure
 
 ```
 Rub-Da-Rabbit/
-├── assets/        # images and fonts
-│   ├── carrot.png
-│   ├── enemy.png
-│   ├── player.png
+├── assets/        # images, fonts, and audio
+│   ├── image/     # player, enemy, and carrot textures
+│   ├── audio/     # music and sound effects
 │   └── font.ttf
 ├── src/           # source code
 │   ├── main.cpp
@@ -101,7 +121,6 @@ Rub-Da-Rabbit/
 
 - The high score is stored in `save.dat` in the working directory. Delete this
   file to reset it.
-- `save.dat` and the compiled binary in `bin/` are currently tracked by git; if
-  you want them ignored and untracked, run
-  `git rm --cached save.dat bin/rubdarabbits`.
 - The window title is "Rub da Rabbits".
+- If textures, fonts, or audio fail to load, confirm that the game was started
+  from the repository root and that the `assets/` directory is present.
