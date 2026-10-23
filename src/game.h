@@ -12,8 +12,10 @@
 #include "ui.h"
 
 class Game {
-  void enemyUpdate();
   void playerUpdate(const Uint8 *keys);
+  void enemyUpdate();
+  void carrotUpdate();
+
   void saveHighScore();
   void loadHighScore();
 

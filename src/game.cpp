@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
@@ -5,6 +6,44 @@
 
 #include "consts.h"
 #include "game.h"
+
+void initializeAudio() {
+  const int requestedMixers = MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_FLAC;
+  const int initializedMixers = Mix_Init(requestedMixers);
+  if ((initializedMixers & requestedMixers) != requestedMixers)
+    SDL_Log("SDL_mixer could not initialize all codecs: %s", Mix_GetError());
+
+  if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, AUDIO_OUTPUT_CHANNELS, 2048) <
+      0) {
+    SDL_Log("Could not open audio device: %s", Mix_GetError());
+    return;
+  }
+
+  Mix_AllocateChannels(AUDIO_CHANNELS);
+}
+
+Mix_Music *loadMusic(const char *path) {
+  Mix_Music *music = Mix_LoadMUS(path);
+  if (music == nullptr)
+    SDL_Log("Could not load background music '%s': %s", path, Mix_GetError());
+  return music;
+}
+
+Mix_Chunk *loadSound(const char *path, int volume) {
+  Mix_Chunk *sound = Mix_LoadWAV(path);
+  if (sound == nullptr) {
+    SDL_Log("Could not load sound '%s': %s", path, Mix_GetError());
+    return nullptr;
+  }
+
+  Mix_VolumeChunk(sound, volume);
+  return sound;
+}
+
+void playSound(Mix_Chunk *sound, int channel = -1) {
+  if (sound != nullptr)
+    Mix_PlayChannel(channel, sound, 0);
+}
 
 void Game::saveHighScore() {
   std::ofstream file(SAVE_FILE, std::ios::binary);
@@ -34,9 +73,7 @@ void Game::init() {
       window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
   SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT);
 
-  Mix_Init(MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_FLAC);
-  Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, AUDIO_CHANNELS, 2048);
-
+  initializeAudio();
   IMG_Init(IMG_INIT_PNG);
   TTF_Init();
 
@@ -51,14 +88,17 @@ void Game::init() {
 
   carrot = new SDL_Rect{WIDTH - 30, HEIGHT - 50, CARROT_WIDTH, CARROT_HEIGHT};
 
-  bgMusic = Mix_LoadMUS(BACKGROUND_MUSIC_PATH);
-  Mix_VolumeMusic(BGM_VOLUME);
-  Mix_PlayMusic(bgMusic, -1);
+  bgMusic = loadMusic(BACKGROUND_MUSIC_PATH);
+  if (bgMusic != nullptr) {
+    Mix_VolumeMusic(BGM_VOLUME);
+    Mix_PlayMusic(bgMusic, -1);
+  }
 
-  jumpSound = Mix_LoadWAV(JUMP_SOUND_PATH);
-  eatSound = Mix_LoadWAV(STAMINA_SOUND_PATH);
-  runSound = Mix_LoadWAV(RUN_SOUND_PATH);
-  gameOverSound = Mix_LoadWAV(GAME_OVER_SOUND_PATH);
+  jumpSound = loadSound(JUMP_SOUND_PATH, JUMP_SOUND_VOLUME);
+  eatSound = loadSound(STAMINA_SOUND_PATH, STAMINA_SOUND_VOLUME);
+  chaserSound = loadSound(CHASE_SOUND_PATH, CHASE_SOUND_VOLUME);
+  runSound = loadSound(RUN_SOUND_PATH, RUN_SOUND_VOLUME);
+  gameOverSound = loadSound(GAME_OVER_SOUND_PATH, GAME_OVER_SOUND_VOLUME);
 
   p->texture = IMG_LoadTexture(renderer, PLAYER_TEXTURE_PATH);
   carrotTexture = IMG_LoadTexture(renderer, CARROT_TEXTURE_PATH);
@@ -67,17 +107,54 @@ void Game::init() {
   tempE.texture = enemyTexture;
   tempE.vx = 0.0f;
   tempE.vy = 0.0f;
+}
 
-  Mix_VolumeChunk(jumpSound, JUMP_SOUND_VOLUME);
-  Mix_VolumeChunk(runSound, RUN_SOUND_VOLUME);
-  Mix_VolumeChunk(eatSound, STAMINA_SOUND_VOLUME);
-  Mix_VolumeChunk(gameOverSound, GAME_OVER_SOUND_VOLUME);
+void Game::playerUpdate(const Uint8 *keys) {
+  if (keys[SDL_SCANCODE_SPACE] && p->s == PLAYER_SIZE && p->stamina > 0)
+    playSound(jumpSound);
+
+  if ((keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_W] ||
+       keys[SDL_SCANCODE_S]) &&
+      p->s == PLAYER_SIZE && !Mix_Playing(RUN_AUDIO_CHANNEL))
+    playSound(runSound, RUN_AUDIO_CHANNEL);
+  else
+    Mix_HaltChannel(RUN_AUDIO_CHANNEL);
+
+  p->update(keys[SDL_SCANCODE_A], keys[SDL_SCANCODE_D], keys[SDL_SCANCODE_W],
+            keys[SDL_SCANCODE_S], keys[SDL_SCANCODE_SPACE], deltaTime);
 }
 
 void Game::enemyUpdate() {
-  for (Enemy &e : *enemies) {
-    e.update(deltaTime, p, running);
+  const std::size_t maxChaseSounds =
+      AUDIO_CHANNELS > 1 ? AUDIO_CHANNELS - 1 : 0;
+  std::vector<std::size_t> nearestEnemies(enemies->size());
+  std::vector<bool> playAudio(enemies->size(), false);
+
+  for (std::size_t i = 0; i < nearestEnemies.size(); ++i)
+    nearestEnemies[i] = i;
+
+  const auto distanceFromPlayer = [this](std::size_t index) {
+    const float dx = (*enemies)[index].x - p->x;
+    const float dy = (*enemies)[index].y - p->y;
+    return dx * dx + dy * dy;
+  };
+
+  const std::size_t soundCount =
+      std::min(maxChaseSounds, nearestEnemies.size());
+  std::partial_sort(nearestEnemies.begin(), nearestEnemies.begin() + soundCount,
+                    nearestEnemies.end(),
+                    [&distanceFromPlayer](std::size_t left, std::size_t right) {
+                      return distanceFromPlayer(left) <
+                             distanceFromPlayer(right);
+                    });
+
+  for (std::size_t i = 0; i < soundCount; ++i)
+    playAudio[nearestEnemies[i]] = true;
+
+  for (std::size_t i = 0; i < enemies->size(); ++i) {
+    (*enemies)[i].update(deltaTime, p, running, chaserSound, playAudio[i]);
   }
+
   for (std::size_t i = 0; i < enemies->size(); i++) {
     for (std::size_t j = i + 1; j < enemies->size(); j++) {
       float dx = (*enemies)[j].x - (*enemies)[i].x;
@@ -102,19 +179,31 @@ void Game::enemyUpdate() {
   }
 }
 
-void Game::playerUpdate(const Uint8 *keys) {
-  if (keys[SDL_SCANCODE_SPACE] && p->s == PLAYER_SIZE && p->stamina > 0)
-    Mix_PlayChannel(-1, jumpSound, 0);
+void Game::carrotUpdate() {
 
-  if ((keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_W] ||
-       keys[SDL_SCANCODE_S]) &&
-      p->s == PLAYER_SIZE && !Mix_Playing(RUN_AUDIO_CHANNEL))
-    Mix_PlayChannel(RUN_AUDIO_CHANNEL, runSound, 0);
-  else
-    Mix_HaltChannel(RUN_AUDIO_CHANNEL);
+  if (SDL_HasIntersection(&p->rect, carrot) && p->s == PLAYER_SIZE) {
+    score++;
+    p->stamina += (p->stamina < MAX_STAMINA) ? STAMINA_RESTORE : 0;
+    playSound(eatSound);
+    ui.update("Score: " + std::to_string(score), {0, 0, 0, 255}, uiFont,
+              scoreTexture);
 
-  p->update(keys[SDL_SCANCODE_A], keys[SDL_SCANCODE_D], keys[SDL_SCANCODE_W],
-            keys[SDL_SCANCODE_S], keys[SDL_SCANCODE_SPACE], deltaTime);
+    carrot->x = rand() % (WIDTH - 20);
+    carrot->y = rand() % (HEIGHT - 40);
+
+    tempE.x = (float)(rand() % (WIDTH - ENEMY_SIZE));
+    tempE.y = (float)(rand() % (HEIGHT - ENEMY_SIZE));
+    if (abs(tempE.x - p->x) < ENEMY_MIN_DISTANCE * PLAYER_SIZE &&
+        abs(tempE.y - p->y) < ENEMY_MIN_DISTANCE * PLAYER_SIZE) {
+      tempE.x +=
+          ((tempE.x - p->x) > 0 ? +1 : -1) * PLAYER_SIZE * ENEMY_MIN_DISTANCE;
+      tempE.y +=
+          ((tempE.y - p->y) > 0 ? +1 : -1) * PLAYER_SIZE * ENEMY_MIN_DISTANCE;
+    }
+    tempE.rect = {(int)(tempE.x - (ENEMY_SIZE / 2)),
+                  (int)(tempE.y - (ENEMY_SIZE / 2)), ENEMY_SIZE, ENEMY_SIZE};
+    enemies->push_back(tempE);
+  }
 }
 
 void Game::loop() {
@@ -148,32 +237,10 @@ void Game::loop() {
 
     enemyUpdate();
 
+    carrotUpdate();
+
     if (!running)
-      Mix_PlayChannel(-1, gameOverSound, 0);
-
-    if (SDL_HasIntersection(&p->rect, carrot) && p->s == PLAYER_SIZE) {
-      score++;
-      p->stamina += (p->stamina < MAX_STAMINA) ? STAMINA_RESTORE : 0;
-      Mix_PlayChannel(-1, eatSound, 0);
-      ui.update("Score: " + std::to_string(score), {0, 0, 0, 255}, uiFont,
-                scoreTexture);
-
-      carrot->x = rand() % (WIDTH - 20);
-      carrot->y = rand() % (HEIGHT - 40);
-
-      tempE.x = (float)(rand() % (WIDTH - ENEMY_SIZE));
-      tempE.y = (float)(rand() % (HEIGHT - ENEMY_SIZE));
-      if (abs(tempE.x - p->x) < ENEMY_MIN_DISTANCE * PLAYER_SIZE &&
-          abs(tempE.y - p->y) < ENEMY_MIN_DISTANCE * PLAYER_SIZE) {
-        tempE.x +=
-            ((tempE.x - p->x) > 0 ? +1 : -1) * PLAYER_SIZE * ENEMY_MIN_DISTANCE;
-        tempE.y +=
-            ((tempE.y - p->y) > 0 ? +1 : -1) * PLAYER_SIZE * ENEMY_MIN_DISTANCE;
-      }
-      tempE.rect = {(int)(tempE.x - (ENEMY_SIZE / 2)),
-                    (int)(tempE.y - (ENEMY_SIZE / 2)), ENEMY_SIZE, ENEMY_SIZE};
-      enemies->push_back(tempE);
-    }
+      playSound(gameOverSound);
 
     SDL_SetRenderDrawColor(renderer, 250, 250, 250, 255);
     SDL_RenderClear(renderer);

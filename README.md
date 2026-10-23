@@ -27,7 +27,7 @@ grab, the higher your score — but every carrot also spawns another enemy.
 - [SDL2](https://www.libsdl.org/)
 - [SDL2_image](https://www.libsdl.org/projects/SDL_image/)
 - [SDL2_ttf](https://www.libsdl.org/projects/SDL_ttf/)
-- [SDL2_mixer](https://www.libsdl.org/projects/SDL_mixer/) (linked, not currently used)
+- [SDL2_mixer](https://www.libsdl.org/projects/SDL_mixer/)
 
 `make` (Linux/macOS) or `mingw32-make` (Windows) is needed for the Makefile build.
 The platform is detected automatically, or can be selected explicitly with
